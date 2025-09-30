@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>All Tasks - TickClone</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+  <style>
+    .task {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#f9fafb; border:1px solid #e5e7eb;
+      border-radius:8px; padding:10px 12px; margin-bottom:8px;
+      transition:background 0.2s;
+    }
+    .task:hover { background:#f3f4f6; }
+    .task-info span { font-weight:600; color:#111827; }
+    .task-info small { font-size:12px; }
+    .task button {
+      border:none; background:none; cursor:pointer;
+      font-size:14px; transition:color 0.2s;
+    }
+    .task button:hover { color:#111827; }
+    .task-list p { color:#6b7280; }
+  </style>
+</head>
+<body>
+<script>
+  if(localStorage.getItem('loggedIn')!=='true') location.href='login.html';
+  function logout(){ localStorage.removeItem('loggedIn'); location.href='login.html'; }
+</script>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo"><i class="fas fa-thumbtack"></i> TickClone</div>
+      <nav>
+        <button onclick="location.href='calendar.html'"><i class="fas fa-calendar"></i> Calendar</button>
+        <button onclick="location.href='today.html'"><i class="fas fa-calendar-day"></i> Today</button>
+        <button onclick="location.href='next7days.html'"><i class="fas fa-calendar-week"></i> Next 7 Days</button>
+        <button onclick="location.href='inbox.html'"><i class="fas fa-inbox"></i> Inbox</button>
+        <hr/>
+        <button onclick="location.href='work.html'"><i class="fas fa-briefcase"></i> Work</button>
+        <button onclick="location.href='study.html'"><i class="fas fa-book"></i> Study</button>
+        <button onclick="location.href='personal.html'"><i class="fas fa-user"></i> Personal</button>
+      </nav>
+    </div>
+    <div class="bottom-actions">
+      <button class="active" onclick="location.href='tasks.html'"><i class="fas fa-tasks"></i> Tasks</button>
+      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Left info -->
+      <div class="left" style="padding:20px; max-width:250px;">
+        <div class="page-header">
+          <h2>📝 All Tasks</h2>
+        </div>
+        <div class="info-box" style="margin-top:15px; color:#374151; font-size:14px; line-height:1.5;">
+          <p>👉 Энэ хэсэгт таны бүх ажлууд ангилал харгалзахгүйгээр жагсаалт хэлбэрээр харагдана.</p>
+          <p>👉 Task бүрийн зүүн талын өнгө нь ангиллыг илэрхийлнэ.</p>
+        </div>
+      </div>
+
+      <!-- Right task list -->
+      <div class="right">
+        <div id="tasksList" class="task-list"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="tasks.js"></script>
+
+
+</body>
+</html>

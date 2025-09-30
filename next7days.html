@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Today - TickClone</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+  <style>
+    .day-block h3 { margin: 10px 0; color:#2563eb; font-size:18px; font-weight:600; }
+
+    /* Task card */
+    .task {
+      display: flex; justify-content: space-between; align-items: center;
+      background:#f9fafb; border:1px solid #e5e7eb;
+      border-radius: 8px; padding:10px 12px; margin-bottom:8px;
+      transition: background 0.2s;
+    }
+    .task:hover { background:#f3f4f6; }
+    .task-info span { font-weight:500; color:#111827; }
+    .task-info small { color:#6b7280; font-size:12px; }
+    .task button {
+      border:none; background:none; cursor:pointer;
+      font-size:14px; color:#4b5563; transition: color 0.2s;
+    }
+    .task button:hover { color:#111827; }
+    .task-list p { color:#6b7280; }
+
+    /* --- Category colors --- */
+    .task.work   { border-left:6px solid #2563eb; }   /* Blue */
+    .task.study  { border-left:6px solid #059669; }   /* Green */
+    .task.personal { border-left:6px solid #f59e0b; } /* Amber */
+    .task.other  { border-left:6px solid #6b7280; }   /* Gray (default) */
+  </style>
+</head>
+<body>
+<script>
+  if(localStorage.getItem('loggedIn')!=='true') location.href='login.html';
+  function logout(){ localStorage.removeItem('loggedIn'); location.href='login.html'; }
+</script>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo"><i class="fas fa-thumbtack"></i> TickClone</div>
+      <nav>
+        <button onclick="location.href='calendar.html'"><i class="fas fa-calendar"></i> Calendar</button>
+        <button class="active" onclick="location.href='today.html'"><i class="fas fa-calendar-day"></i> Today</button>
+        <button onclick="location.href='next7days.html'"><i class="fas fa-calendar-week"></i> Next 7 Days</button>
+        <button onclick="location.href='inbox.html'"><i class="fas fa-inbox"></i> Inbox</button>
+        <hr/>
+        <button onclick="location.href='work.html'"><i class="fas fa-briefcase"></i> Work</button>
+        <button onclick="location.href='study.html'"><i class="fas fa-book"></i> Study</button>
+        <button onclick="location.href='personal.html'"><i class="fas fa-user"></i> Personal</button>
+      </nav>
+    </div>
+    <div class="bottom-actions">
+      <button onclick="location.href='tasks.html'"><i class="fas fa-tasks"></i> Tasks</button>
+      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="container">
+
+      <!-- Left side -->
+      <div class="left" style="padding:20px; max-width:250px;">
+        <div class="page-header">
+          <h2 id="pageTitle">📅 Today</h2>
+        </div>
+        <div class="info-box" style="margin-top:15px; color:#374151; font-size:14px; line-height:1.5;">
+          <p>👉 Энэ хэсэгт сонгосон хугацааны ажлууд харагдана.</p>
+          <p>👉 Баруун талд жагсаалтаар харуулна, та <b>Edit</b> болон <b>Delete</b> хийж болно.</p>
+          <p>👉 Шинэ ажил нэмэхдээ <b>Calendar</b>-аас сонгож оруулна.</p>
+        </div>
+      </div>
+
+      <!-- Right side tasks -->
+      <div class="right">
+        <div id="taskList" class="task-list"></div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+const taskList = document.getElementById('taskList');
+
+/**
+ * Render tasks
+ * @param {"today"|"next7days"} mode
+ */
+function renderTasks(mode="today"){
+  const now = new Date(); now.setHours(0,0,0,0);
+
+  let list = [];
+  if(mode==="today"){
+    list = tasks.filter(t=>{
+      const d = new Date(t.date); d.setHours(0,0,0,0);
+      return d.getTime() === now.getTime();
+    });
+    document.getElementById("pageTitle").textContent = "📅 Today";
+  }
+  else if(mode==="next7days"){
+    const end = new Date(now); end.setDate(end.getDate()+7);
+    list = tasks.filter(t=>{
+      const d = new Date(t.date); d.setHours(0,0,0,0);
+      return d>=now && d<=end;
+    });
+    document.getElementById("pageTitle").textContent = "📅 Next 7 Days";
+  }
+
+  if(list.length===0){
+    taskList.innerHTML = '<p>No tasks.</p>';
+    return;
+  }
+
+  // group by date
+  const groups = {};
+  list.forEach(t=>{
+    const key = new Date(t.date).toDateString();
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(t);
+  });
+
+  taskList.innerHTML = Object.keys(groups).map(dateStr=>{
+    const dayTasks = groups[dateStr];
+    const dateObj = new Date(dayTasks[0].date);
+    const title = dateObj.toLocaleDateString(undefined,{weekday:'long', month:'short', day:'numeric'});
+    return `
+      <div class="day-block">
+        <h3>${title}</h3>
+        ${dayTasks.map(t=>{
+          const catClass = (t.category||"other").toLowerCase();
+          return `
+            <div class="task ${catClass}">
+              <div class="task-info">
+                <span>${t.name}</span><br/>
+                <small>${t.from||'All day'} ${t.to?'- '+t.to:''} • ${t.category}</small>
+              </div>
+              <div style="display:flex;gap:8px">
+                <button onclick="edit('${t._id}')" title="Edit"><i class="fas fa-pen"></i></button>
+                <button onclick="del('${t._id}')" title="Delete"><i class="fas fa-trash"></i></button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }).join('');
+}
+
+function del(id){
+  if(!confirm('Delete?')) return;
+  tasks = tasks.filter(t=> t._id !== id);
+  localStorage.setItem('tasks', JSON.stringify(tasks));
+  renderTasks("today");
+}
+
+function edit(id){
+  const idx = tasks.findIndex(t=> t._id===id);
+  if(idx===-1) return;
+  const nt = prompt('Edit task name:', tasks[idx].name);
+  if(nt && nt.trim()!==''){
+    tasks[idx].name = nt.trim();
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+    renderTasks("today");
+  }
+}
+
+// Default: render Next7days
+renderTasks("next7days");
+</script>
+
+
+</body>
+</html>

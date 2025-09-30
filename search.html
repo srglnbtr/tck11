@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>Search - TickClone</title><link rel="stylesheet" href="style.css"/></head><body>
+<script> if(localStorage.getItem('loggedIn')!=='true') location.href='login.html'; function logout(){ localStorage.removeItem('loggedIn'); location.href='login.html'; } </script>
+<div style="display:flex;gap:18px;padding:20px"><input id="q" placeholder="Search tasks..." style="flex:1;padding:10px;border-radius:8px"/><button id="go">Search</button></div>
+<div id="results" style="padding:20px"></div>
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks'))||[];
+document.getElementById('go').addEventListener('click', ()=>{
+  const q = document.getElementById('q').value.toLowerCase();
+  const res = tasks.filter(t=> t.name.toLowerCase().includes(q) || t.category.toLowerCase().includes(q));
+  document.getElementById('results').innerHTML = res.length ? res.map(r=>`<div style="padding:10px;background:white;border-radius:8px;margin-bottom:8px">${r.name} • ${r.date} • ${r.category}</div>`).join('') : '<p style="color:#6b7280">No results</p>';
+});
+</script>
+
+
+</body></html>

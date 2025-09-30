@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <title>Work - TickClone</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css"/>
+</head>
+<body>
+<script>
+  if(localStorage.getItem('loggedIn')!=='true') location.href='login.html';
+  function logout(){ localStorage.removeItem('loggedIn'); location.href='login.html'; }
+</script>
+
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div>
+      <div class="logo"><i class="fas fa-thumbtack"></i> TickClone</div>
+      <nav>
+        <button onclick="location.href='calendar.html'"><i class="fas fa-calendar"></i> Calendar</button>
+        <button onclick="location.href='today.html'"><i class="fas fa-calendar-day"></i> Today</button>
+        <button onclick="location.href='next7days.html'"><i class="fas fa-calendar-week"></i> Next 7 Days</button>
+        <button onclick="location.href='inbox.html'"><i class="fas fa-inbox"></i> Inbox</button>
+        <hr/>
+        <button class="active" onclick="location.href='work.html'"><i class="fas fa-briefcase"></i> Work</button>
+        <button onclick="location.href='study.html'"><i class="fas fa-book"></i> Study</button>
+        <button onclick="location.href='personal.html'"><i class="fas fa-user"></i> Personal</button>
+      </nav>
+    </div>
+    <div class="bottom-actions">
+      <button onclick="location.href='tasks.html'"><i class="fas fa-tasks"></i> Tasks</button>
+      <button onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-content">
+    <div class="container">
+      <!-- Left -->
+      <div class="left" style="padding:20px; max-width:250px;">
+        <div class="page-header">
+          <h2>💼 Work</h2>
+        </div>
+        <div class="info-box">
+          <p>👉 Энэ хэсэгт <b>Work</b> төрөлд хамаарах бүх ажлууд харагдана.</p>
+        </div>
+      </div>
+
+      <!-- Right -->
+      <div class="right">
+        <div id="workList" class="tasks-container"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+const workList = document.getElementById('workList');
+
+function renderWork(){
+  const list = tasks.filter(t=> t.category==="Work");
+  if(list.length===0){ 
+    workList.innerHTML = '<p style="color:#6b7280;">No Work tasks.</p>'; 
+    return; 
+  }
+
+  workList.innerHTML = list.map(t=>`
+    <div class="task-card work">
+      <div class="task-header">
+        <h3>${t.name}</h3>
+        <div class="task-actions">
+          <button onclick="edit('${t._id}')" title="Edit"><i class="fas fa-pen"></i></button>
+          <button onclick="del('${t._id}')" title="Delete"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <p class="task-date"><i class="fas fa-calendar-day"></i> ${new Date(t.date).toLocaleDateString()}</p>
+      <p class="task-time"><i class="fas fa-clock"></i> ${t.from || "All day"} ${t.to ? " - " + t.to : ""}</p>
+    </div>
+  `).join('');
+}
+
+function del(id){ 
+  tasks = tasks.filter(t=> t._id!==id); 
+  localStorage.setItem('tasks',JSON.stringify(tasks)); 
+  renderWork(); 
+}
+
+function edit(id){ 
+  let i=tasks.findIndex(t=>t._id===id); 
+  if(i===-1) return; 
+  let nt=prompt('Edit task:',tasks[i].name); 
+  if(nt){tasks[i].name=nt;localStorage.setItem('tasks',JSON.stringify(tasks));renderWork();}
+}
+
+renderWork();
+</script>
+
+
+</body>
+</html>
