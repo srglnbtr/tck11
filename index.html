@@ -3,23 +3,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TickClone</title>
+
+  <!-- Redirect to login -->
   <meta http-equiv="refresh" content="0; url=login.html" />
-  <title>Redirecting...</title>
+
+  <!-- PWA -->
   <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0ea5e9">
+  <meta name="theme-color" content="#0ea5e9">
 
-<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+  <!-- iOS support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <!-- Icons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-152.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="icon-167.png">
 </head>
 <body>
   <p>Redirecting to <a href="login.html">login page</a>...</p>
-  <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js")
-      .then(r => console.log("SW registered", r))
-      .catch(e => console.log("SW fail", e));
-  }
-</script>
 
+  <script>
+    // Service Worker register
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js")
+          .then(r => console.log("✅ Service Worker registered:", r.scope))
+          .catch(e => console.log("❌ Service Worker failed:", e));
+      });
+    }
+  </script>
 </body>
 </html>
