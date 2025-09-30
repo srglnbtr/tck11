@@ -5,8 +5,21 @@
   <meta charset="UTF-8">
   <meta http-equiv="refresh" content="0; url=login.html" />
   <title>Redirecting...</title>
+  <link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0ea5e9">
+
+<link rel="apple-touch-icon" sizes="180x180" href="icon-192.png">
+
 </head>
 <body>
   <p>Redirecting to <a href="login.html">login page</a>...</p>
+  <script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(r => console.log("SW registered", r))
+      .catch(e => console.log("SW fail", e));
+  }
+</script>
+
 </body>
 </html>
