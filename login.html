@@ -3,7 +3,14 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>TickClone — 3D Login</title>
+  <title>TickClone — Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="TickClone">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
   <style>
     :root{
       --bg1: #0ea5e9;
@@ -12,361 +19,129 @@
       --card-w: 860px;
       --card-h: 520px;
       --soft-shadow: 0 12px 40px rgba(10,20,40,0.25);
-      --glass: rgba(255,255,255,0.08);
-      --glass-2: rgba(255,255,255,0.06);
     }
-
     *{box-sizing:border-box}
-    html,body{height:100%;margin:0;font-family:"Inter", "Segoe UI", system-ui, Arial; -webkit-font-smoothing:antialiased;}
     body{
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,0.05), transparent),
-                  linear-gradient(135deg,var(--bg1), var(--bg2));
+      margin:0;
       height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:"Inter",system-ui,Arial;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      -webkit-font-smoothing:antialiased;
       overflow:hidden;
     }
-
-    /* Scene perspective wrapper */
-    .scene {
-      perspective: 1400px;
-      width: min(var(--card-w), 96%);
-      max-width: var(--card-w);
-      height: min(var(--card-h), 92vh);
-      max-height: var(--card-h);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    /* Floating ambient orbs */
-    .orb {
-      position:absolute;
-      filter: blur(90px) saturate(140%);
-      opacity:.65;
-      border-radius:50%;
-      pointer-events:none;
-      transform:translateZ(0);
-    }
-    .orb.a { width:420px;height:420px; background:rgba(99,102,241,0.35); top:-120px; left:-80px; }
-    .orb.b { width:360px;height:360px; background:rgba(14,165,233,0.25); bottom:-140px; right:-60px; }
-
-    /* The 3D card */
-    .card-3d {
-      width:100%;
-      height:100%;
-      transform-style: preserve-3d;
-      transition: transform 300ms cubic-bezier(.2,.9,.2,1), box-shadow 300ms;
-      will-change: transform;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      position:relative;
-    }
-
-    /* layered depth planes */
-    .card-surface {
-      width:100%;
-      height:100%;
-      border-radius:20px;
-      position:relative;
-      transform-style: preserve-3d;
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-      box-shadow: var(--soft-shadow), 0 2px 12px rgba(255,255,255,0.02) inset;
-      overflow:hidden;
-      border: 1px solid rgba(255,255,255,0.06);
-      backface-visibility: hidden;
-    }
-
-    /* subtle inner glass layers for depth */
-    .card-surface::before,
-    .card-surface::after {
-      content: "";
-      position:absolute;
-      inset: 10px;
-      border-radius:14px;
-      pointer-events:none;
-    }
-    .card-surface::before {
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
-      transform: translateZ(40px) scale(.98);
-      filter: blur(6px);
-      opacity:.9;
-    }
-    .card-surface::after {
-      background: radial-gradient(400px 200px at 20% 20%, rgba(255,255,255,0.06), transparent 30%),
-                  linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.00));
-      transform: translateZ(10px) scale(.995);
-      opacity:.7;
-    }
-
-    /* split layout inside card */
-    .card-inner {
-      position:absolute;
-      inset:0;
-      display:flex;
-      gap:0;
-      align-items:stretch;
-    }
-
-    .side-left {
-      width:48%;
-      padding:36px 28px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-      color:rgba(255,255,255,0.95);
-      transform: translateZ(60px) scale(.995);
-      border-right: 1px solid rgba(255,255,255,0.03);
-    }
-
-    .side-left h1 {
-      font-size:32px;
-      margin:0 0 10px;
-      letter-spacing:-0.5px;
-      color:#fff;
-      text-shadow: 0 6px 22px rgba(0,0,0,0.25);
-    }
-    .side-left p { margin:0 0 18px; color:rgba(255,255,255,0.9); font-size:14px; }
-
-    .side-left .cta {
-      display:flex;
-      gap:12px;
-      align-items:center;
-    }
-    .btn-ghost {
-      padding:10px 18px;
-      border-radius:12px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-      color:#fff;
-      border:1px solid rgba(255,255,255,0.12);
-      cursor:pointer;
-      font-weight:600;
-      backdrop-filter: blur(6px);
-    }
-
-    .side-right {
-      width:52%;
-      padding:32px 40px;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-      transform: translateZ(90px);
-    }
-
-    .form {
-      width:100%;
-      max-width:320px;
-      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.00));
-      border-radius:14px;
-      padding:22px;
-      backdrop-filter: blur(8px);
-      box-shadow: 0 6px 24px rgba(12,18,30,0.12);
-      border:1px solid rgba(255,255,255,0.04);
-    }
-
-    .form h2 { margin:0 0 8px; color:#f8fafc; font-size:20px; }
-    .form p { color: #e6eefc; margin:0 0 16px; font-size:13px; }
-
-    .input {
-      width:100%;
-      padding:12px 14px;
-      border-radius:10px;
-      border:none;
-      margin-bottom:10px;
-      font-size:14px;
-      outline:none;
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.04);
-    }
-    .action {
-      width:100%;
-      padding:12px;
-      border-radius:10px;
-      border:none;
-      margin-top:6px;
-      font-weight:700;
-      cursor:pointer;
-      background: linear-gradient(90deg, #60a5fa, #818cf8);
-      color:#fff;
-      box-shadow: 0 6px 18px rgba(16,24,40,0.2);
-    }
-
-    .small-link { display:block; margin-top:12px; font-size:12px; color:rgba(255,255,255,0.8); text-align:right; text-decoration:none; }
-
-    /* indicator dots depth */
-    .depth-dots { position:absolute; left:14px; bottom:14px; display:flex; gap:8px; z-index:20; }
-    .dot { width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,0.06); box-shadow:0 3px 8px rgba(0,0,0,0.2) inset; }
-
-    /* responsive */
-    @media (max-width:920px){
-      .container { width:95%; height:auto; }
-      .side-left { display:none; }
-      .side-right { width:100%; }
-      .scene { height: auto; perspective: 1000px; }
-    }
-
+    .scene{perspective:1200px;width:min(var(--card-w),95%);max-width:var(--card-w);height:min(var(--card-h),92vh);display:flex;align-items:center;justify-content:center}
+    .orb{position:absolute;border-radius:50%;filter:blur(90px) saturate(150%);opacity:.5}
+    .orb.a{width:400px;height:400px;top:-120px;left:-80px;background:rgba(99,102,241,.35)}
+    .orb.b{width:360px;height:360px;bottom:-140px;right:-60px;background:rgba(14,165,233,.3)}
+    .card-3d{width:100%;height:100%;transform-style:preserve-3d;transition:transform .3s;display:flex;align-items:center;justify-content:center}
+    .card-surface{width:100%;height:100%;border-radius:20px;background:rgba(255,255,255,.05);box-shadow:var(--soft-shadow);overflow:hidden;display:flex}
+    .side-left{flex:1;padding:36px 28px;color:#fff;display:flex;flex-direction:column;justify-content:center;backdrop-filter:blur(4px)}
+    .side-left h1{margin:0 0 10px;font-size:30px}
+    .side-left p{font-size:14px;margin:0 0 16px}
+    .side-left .btn-ghost{padding:10px 18px;border-radius:12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2);color:#fff;font-weight:600;cursor:pointer;transition:.2s}
+    .side-left .btn-ghost:hover{background:rgba(255,255,255,.15)}
+    .side-right{flex:1;padding:32px 40px;display:flex;align-items:center;justify-content:center}
+    .form{width:100%;max-width:320px;background:rgba(255,255,255,.05);padding:22px;border-radius:14px;backdrop-filter:blur(8px)}
+    .form h2{margin:0 0 8px;color:#fff}
+    .input{width:100%;padding:12px 14px;margin-bottom:10px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;font-size:14px}
+    .action{width:100%;padding:12px;margin-top:6px;border:none;border-radius:10px;background:linear-gradient(90deg,#60a5fa,#818cf8);color:#fff;font-weight:700;cursor:pointer;transition:.2s}
+    .action:hover{filter:brightness(1.1)}
+    .small-link{display:block;margin-top:10px;font-size:12px;color:#ddd;text-align:right;text-decoration:none}
+    .msg{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.3s;pointer-events:none}
+    .msg.show{opacity:1}
+    @media(max-width:768px){.side-left{display:none}.side-right{flex:1}}
   </style>
 </head>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-
-
-
-<link rel="manifest" href="manifest.json">
-
-<!-- iOS тусгай тохиргоо -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="TickClone">
-<link rel="apple-touch-icon" href="icon-192.png">
-
 <body>
   <div class="orb a"></div>
   <div class="orb b"></div>
-
   <div class="scene">
     <div class="card-3d" id="card">
       <div class="card-surface">
-        <div class="card-inner">
-          <div class="side-left">
-            <h1>Welcome to TickClone</h1>
-            <p>Organize your schedule, get reminders and stay productive. Sign up to sync across devices.</p>
-            <div class="cta">
-              <button class="btn-ghost" id="openSignup">Create account</button>
-              <button class="btn-ghost" id="openLogin">I already have</button>
-            </div>
-          </div>
-
-          <div class="side-right">
-            <div class="form" id="formWrap">
-              <!-- default show login -->
-              <div id="loginBox">
-                <h2>Sign In</h2>
-                <p>Welcome back — please enter your details.</p>
-                <input class="input" id="li-user" placeholder="Username" />
-                <input type="password" class="input" id="li-pass" placeholder="Password" />
-                <button class="action" id="loginBtn">Login</button>
-                <a href="#" class="small-link" id="gotoSignup">Create account</a>
-              </div>
-
-              <div id="signupBox" style="display:none;">
-                <h2>Create</h2>
-                <p>Start using TickClone today</p>
-                <input class="input" id="su-user" placeholder="Username" />
-                <input type="password" class="input" id="su-pass" placeholder="Password" />
-                <button class="action" id="signupBtn">Sign Up</button>
-                <a href="#" class="small-link" id="gotoLogin">Have an account?</a>
-              </div>
-            </div>
-          </div>
+        <div class="side-left">
+          <h1>Welcome to TickClone</h1>
+          <p>Organize your schedule and sync across devices.</p>
+          <button class="btn-ghost" id="openSignup">Create account</button>
+          <button class="btn-ghost" id="openLogin">I already have</button>
         </div>
-
-        <div class="depth-dots">
-          <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+        <div class="side-right">
+          <div class="form" id="formWrap">
+            <div id="loginBox">
+              <h2>Sign In</h2>
+              <input class="input" id="li-user" placeholder="Username">
+              <input type="password" class="input" id="li-pass" placeholder="Password">
+              <button class="action" id="loginBtn">Login</button>
+              <a href="#" class="small-link" id="gotoSignup">Create account</a>
+            </div>
+            <div id="signupBox" style="display:none">
+              <h2>Create</h2>
+              <input class="input" id="su-user" placeholder="Username">
+              <input type="password" class="input" id="su-pass" placeholder="Password">
+              <button class="action" id="signupBtn">Sign Up</button>
+              <a href="#" class="small-link" id="gotoLogin">Have an account?</a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  <div id="msg" class="msg"></div>
 
 <script>
-/* ======= 3D tilt on mousemove ======= */
-(function(){
-  const card = document.getElementById('card');
-  const scene = document.querySelector('.scene');
-  let bounds = card.getBoundingClientRect();
-  let supportsTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+/* ---- tilt ---- */
+const card=document.getElementById("card"),scene=document.querySelector(".scene");
+let rect=card.getBoundingClientRect();
+window.addEventListener("resize",()=>rect=card.getBoundingClientRect());
+scene.addEventListener("mousemove",e=>{
+  const x=(e.clientX-rect.left)/rect.width-.5,y=(e.clientY-rect.top)/rect.height-.5;
+  card.style.transform=`rotateY(${x*15}deg) rotateX(${-y*10}deg)`;
+});
+scene.addEventListener("mouseleave",()=>card.style.transform="rotateY(0) rotateX(0)");
 
-  function updateBounds(){ bounds = card.getBoundingClientRect(); }
+/* ---- auth ---- */
+const loginBox=document.getElementById("loginBox"),
+      signupBox=document.getElementById("signupBox"),
+      openSignup=document.getElementById("openSignup"),
+      openLogin=document.getElementById("openLogin"),
+      gotoSignup=document.getElementById("gotoSignup"),
+      gotoLogin=document.getElementById("gotoLogin"),
+      msg=document.getElementById("msg");
 
-  function handleMove(e){
-    if(supportsTouch) return;
-    const x = (e.clientX - bounds.left) / bounds.width; // 0..1
-    const y = (e.clientY - bounds.top) / bounds.height; // 0..1
-    const rotateY = (x - 0.5) * 18; // horizontal tilt
-    const rotateX = (0.5 - y) * 12; // vertical tilt
+function show(box){loginBox.style.display=box==="login"?"block":"none";signupBox.style.display=box==="signup"?"block":"none";}
+function showMessage(text){msg.textContent=text;msg.classList.add("show");setTimeout(()=>msg.classList.remove("show"),2000);}
 
-    // apply transform with depth layers
-    card.style.transform = `rotateY(${rotateY}deg) rotateX(${rotateX}deg) translateZ(20px)`;
-  }
+openSignup.onclick=()=>show("signup");
+openLogin.onclick=()=>show("login");
+gotoSignup.onclick=e=>{e.preventDefault();show("signup")};
+gotoLogin.onclick=e=>{e.preventDefault();show("login")};
 
-  function handleLeave(){
-    card.style.transform = `rotateY(0deg) rotateX(0deg) translateZ(0px)`;
-  }
+document.getElementById("signupBtn").onclick=()=>{
+  const u=document.getElementById("su-user").value.trim(),
+        p=document.getElementById("su-pass").value.trim();
+  if(!u||!p) return showMessage("Fill all fields");
+  if(localStorage.getItem("user_"+u)) return showMessage("User exists");
+  localStorage.setItem("user_"+u,p);
+  showMessage("Account created — login now");
+  show("login");
+};
 
-  window.addEventListener('resize', updateBounds);
-  if(!supportsTouch){
-    scene.addEventListener('mousemove', handleMove);
-    scene.addEventListener('mouseleave', handleLeave);
-  } else {
-    // On touch devices, subtle scale for presence
-    scene.addEventListener('touchstart', ()=> card.style.transform='scale(1.01) translateZ(0)');
-    scene.addEventListener('touchend', ()=> card.style.transform='scale(1) translateZ(0)');
-  }
-})();
-
-/* ======= Signup/Login logic (localStorage demo) ======= */
-(function(){
-  const loginBox = document.getElementById('loginBox');
-  const signupBox = document.getElementById('signupBox');
-  const openSignup = document.getElementById('openSignup');
-  const openLogin = document.getElementById('openLogin');
-  const gotoSignup = document.getElementById('gotoSignup');
-  const gotoLogin = document.getElementById('gotoLogin');
-
-  function showSignup(){
-    loginBox.style.display='none';
-    signupBox.style.display='block';
-  }
-  function showLogin(){
-    signupBox.style.display='none';
-    loginBox.style.display='block';
-  }
-
-  openSignup.addEventListener('click', showSignup);
-  openLogin.addEventListener('click', showLogin);
-  gotoSignup.addEventListener('click', function(e){ e.preventDefault(); showSignup(); });
-  gotoLogin.addEventListener('click', function(e){ e.preventDefault(); showLogin(); });
-
-  // Signup
-  document.getElementById('signupBtn').addEventListener('click', function(){
-    const u = document.getElementById('su-user').value.trim();
-    const p = document.getElementById('su-pass').value.trim();
-    if(!u || !p){ alert('Fill all fields'); return; }
-    if(localStorage.getItem('user_'+u)){ alert('Username exists'); return; }
-    localStorage.setItem('user_'+u, p);
-    alert('Account created — please login');
-    showLogin();
-  });
-
-  // Login
-  document.getElementById('loginBtn').addEventListener('click', function(){
-    const u = document.getElementById('li-user').value.trim();
-    const p = document.getElementById('li-pass').value.trim();
-    if(!u || !p){ alert('Fill all fields'); return; }
-    const stored = localStorage.getItem('user_'+u);
-    if(stored && stored === p){
-      localStorage.setItem('loggedIn','true');
-      // redirect to calendar or demo landing
-      location.href = 'calendar.html';
-    } else {
-      alert('Invalid username or password');
-    }
-  });
-
-})();
+document.getElementById("loginBtn").onclick=()=>{
+  const u=document.getElementById("li-user").value.trim(),
+        p=document.getElementById("li-pass").value.trim();
+  if(!u||!p) return showMessage("Fill all fields");
+  const stored=localStorage.getItem("user_"+u);
+  if(stored===p){
+    localStorage.setItem("loggedIn","true");
+    location.href="calendar.html";
+  } else showMessage("Invalid credentials");
+};
 </script>
-
 
 <script>
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("service-worker.js");
-  }
+if("serviceWorker" in navigator){navigator.serviceWorker.register("service-worker.js");}
 </script>
-
 </body>
 </html>
